@@ -17,6 +17,8 @@
 
 ## This is very quick and ugly code, not very pythonistic
 ## I struggle with Python's lack of a 'struct', so just did this manually
+## The IDX file structure is very ugly as well, mixing between C-strings (null term)
+## and Pascal strings (len-prefixed), as well as both DWORD and WORD length fields. Ugh.
 import sys
 import struct
 	
