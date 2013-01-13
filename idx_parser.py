@@ -5,6 +5,16 @@
 # These files hold critical details for malware infections, especially
 # Java related ones, e.g. BlackHole.
 
+#Output example:
+#IDX file: 1c20de82-1678cc50.idx
+#URL: hxxp://80d3c146d3.gshjsewsf.su:82/forum/dare.php?hsh=6&key=b30a14e1c597bd7215d593d3f03bd1ab
+#IP: 50.7.219.70
+#File Size: 7162
+#Type: application/x-java-archive
+#Server Date: Mon, 26 Jul 2001 05:00:00 GMT
+#Server type: nginx/1.0.15
+#Download date: Sun, 13 Jan 2013 16:22:01 GMT
+
 ## This is very quick and ugly code, not very pythonistic
 ## I struggle with Python's lack of a 'struct', so just did this manually
 import sys
