@@ -112,10 +112,10 @@ offset += len_server
 
 # Print results
 print "IDX file: %s" % fname
-print "URL : %s" % (data_URL)
-print "IP : %s" % (data_IP)
-print "JAR Size : %s" % (data_contentlen)
-print "Type : %s" % (data_type)
-print "Server Date : %s" % (data_modified)
-print "Server type : %s" % (data_server)
-print "Download date : %s" % (data_date)
+print "URL: %s" % (data_URL)
+print "IP: %s" % (data_IP)
+print "File Size: %s" % (data_contentlen)
+print "Type: %s" % (data_type)
+print "Server Date: %s" % (data_modified)
+print "Server type: %s" % (data_server)
+print "Download date: %s" % (data_date)
