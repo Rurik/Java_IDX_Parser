@@ -1,5 +1,5 @@
 # Java Cache IDX parser
-# Version 0.1 - 12 Jan 13 - @bbaskin
+# Version 1.0 - 12 Jan 13 - @bbaskin
 # Views cached Java download history files
 # Typically located in %AppData%\LocalLow\Sun\Java\Deployment\Cache
 # These files hold critical details for malware infections, especially
