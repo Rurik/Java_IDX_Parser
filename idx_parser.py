@@ -5,17 +5,26 @@
 # These files hold critical details for malware infections, especially
 # Java related ones, e.g. BlackHole.
 
+## This is very quick and ugly code, not very pythonistic
+## I struggle with Python's lack of a 'struct', so just did this manually
 import sys
 import struct
+	
+print "Java IDX Parser -- version 1.0 -- by @bbaskin"
+print ""
 
-def FindString(data, key):
-  for i in range(0, len(data)-len(key)+1):
-		if data[i:i+len(key)] == key:
-			return i
-	return -1
-
-fname = '4b50315e-3872732b.idx'
-data = open(fname, 'rb').read()
+try:
+	fname = sys.argv[1]
+except:
+	print "Usage: idx_parser.py <filename>"
+	quit()
+	
+try:	
+	data = open(fname, 'rb').read()
+except:
+	print "File not found: %s" % fname
+	quit()
+	
 header = data[0:8].encode("hex")
 if header != "00000000025d0000":
 	print "Invalid IDX header found"
@@ -23,12 +32,15 @@ if header != "00000000025d0000":
 	print "Expected: 0x00000000025d0000"
 	quit()
 
-offset = FindString(data, 'http') - 1
+offset = data.find('http') - 1
 if offset < 0:
 	print "HTTP URL not found!"
 	quit()
 len_URL = ord(data[offset])+1
 data_URL = data[offset+1:offset+len_URL]
+
+#This is ugly, sorry. I should likely have done it with 
+#dictionary or list appends.
 
 offset += len_URL
 len_IP = struct.unpack(">l", data[offset:offset+4])[0]
@@ -98,18 +110,12 @@ offset += 2
 data_server = data[offset:offset+len_server]
 offset += len_server
 
-print data_URL
-print data_IP
-print data_unk1
-print data_unk2
-print data_httpstatus
-print data_contentlenhdr
-print data_contentlen
-print data_modifiedhdr
-print data_modified
-print data_typehdr
-print data_type
-print data_datehdr
-print data_date
-print data_serverhdr
-print data_server
+# Print results
+print "IDX file: %s" % fname
+print "URL : %s" % (data_URL)
+print "IP : %s" % (data_IP)
+print "JAR Size : %s" % (data_contentlen)
+print "Type : %s" % (data_type)
+print "Server Date : %s" % (data_modified)
+print "Server type : %s" % (data_server)
+print "Download date : %s" % (data_date)
