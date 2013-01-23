@@ -86,10 +86,12 @@ elif cache_ver in [603, 604]:
 	sec5_len = struct.unpack(">l", data.read(4))[0]
 elif cache_ver == 602:
 	sec2_len = filesize - 0x80
-else:
 	sec3_len = 0
 	sec4_len = 0
 	sec5_len = 0
+else:
+	print "Current file version is not supported at this time."
+	quit()
 	
 
 if sec2_len:
