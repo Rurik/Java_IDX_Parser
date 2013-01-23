@@ -1,5 +1,10 @@
 # Java Cache IDX parser
 # Version 1.0 - 12 Jan 13 - @bbaskin
+# Version 1.1, now supports various IDX file versions
+# *	Updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
+# * Research also produced by 
+# * Static data is found in sections 3 and 4, but no idea on their values yet.
+
 # Views cached Java download history files
 # Typically located in %AppData%\LocalLow\Sun\Java\Deployment\Cache
 # These files hold critical details for malware infections, especially
@@ -21,8 +26,9 @@
 ## and Pascal strings (len-prefixed), as well as both DWORD and WORD length fields. Ugh.
 import sys
 import struct
-	
-print "Java IDX Parser -- version 1.0 -- by @bbaskin"
+import os
+
+print "Java IDX Parser -- version 1.1 -- by @bbaskin"
 print ""
 
 try:
@@ -36,98 +42,109 @@ try:
 except:
 	print "File not found: %s" % fname
 	quit()
-	
-header = data[0:8].encode("hex")
-if header != "00000000025d0000":
+
+filesize = os.path.getsize(fname)
+header = data.read(8)
+cache_ver = struct.unpack(">h", header[4:6])[0]
+if cache_ver not in (602, 603, 604, 605, 606):
 	print "Invalid IDX header found"
 	print "Found:    0x%s" % header
-	print "Expected: 0x00000000025d0000"
 	quit()
+print "IDX file: %s (IDX File Version %d.%02d)" % (fname, cache_ver / 100, cache_ver - 600)
 
-offset = data.find('http') - 1
-if offset < 0:
-	print "HTTP URL not found!"
-	quit()
-len_URL = ord(data[offset])+1
-data_URL = data[offset+1:offset+len_URL]
 
-#This is ugly, sorry. I should likely have done it with 
-#dictionary or list appends.
+#Parse meta data	
+data.seek(7)
+meta_jar_len1 = struct.unpack(">l", data.read(4))[0]
 
-offset += len_URL
-len_IP = struct.unpack(">l", data[offset:offset+4])[0]
-offset += 4
-data_IP = data[offset:offset+len_IP]
-offset += len_IP
-data_unk1 = struct.unpack(">l", data[offset:offset+4])[0]
-offset += 4
+# Different IDX cache versions have data in different offsets
+# See Mark Woan's breakdown at https://github.com/woanware/javaidx/tree/master/Documents
+if cache_ver == 605:
+	data.seek(36)
+	sec2_len = struct.unpack(">l", data.read(4))[0]
+	sec3_len = struct.unpack(">l", data.read(4))[0]
+	sec4_len = struct.unpack(">l", data.read(4))[0]
+	sec5_len = struct.unpack(">l", data.read(4))[0]
+elif cache_ver in [603, 604]:
+	data.seek(38)
+	sec2_len = struct.unpack(">l", data.read(4))[0]
+	sec3_len = struct.unpack(">l", data.read(4))[0]
+	sec4_len = struct.unpack(">l", data.read(4))[0]
+	sec5_len = struct.unpack(">l", data.read(4))[0]
+elif cache_ver == 602:
+	sec2_len = filesize - 0x80
+else:
+	sec3_len = 0
+	sec4_len = 0
+	sec5_len = 0
+	
 
-len_unk2 = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_unk2 = data[offset:offset+len_unk2]
-offset += len_unk2
+if sec2_len:
+	data.seek (128)
+	len_URL = struct.unpack(">l", data.read(4))[0]
+	data_URL = data.read(len_URL)
+	
+	len_IP = struct.unpack(">l", data.read(4))[0]
+	data_IP = data.read(len_IP)
+	data_unk1 = struct.unpack(">l", data.read(4))[0]
+	
+	len_unk2 = struct.unpack(">h", data.read(2))[0]
+	data_unk2 = data.read(len_unk2)
+	
+	len_httpstatus = struct.unpack(">h", data.read(2))[0]
+	data_httpstatus = data.read(len_httpstatus)
+	
+	len_contentlenhdr = struct.unpack(">h", data.read(2))[0]
+	data_contentlenhdr = data.read(len_contentlenhdr)
+	
+	len_contentlen = struct.unpack(">h", data.read(2))[0]
+	data_contentlen = data.read(len_contentlen)
+	
+	len_modifiedhdr = struct.unpack(">h", data.read(2))[0]
+	data_modifiedhdr = data.read(len_modifiedhdr)
+	
+	len_modified = struct.unpack(">h", data.read(2))[0]
+	data_modified = data.read(len_modified)
+	
+	len_typehdr = struct.unpack(">h", data.read(2))[0]
+	data_typehdr = data.read(len_typehdr)
+	
+	len_type = struct.unpack(">h", data.read(2))[0]
+	data_type = data.read(len_type)
+	
+	len_datehdr = struct.unpack(">h", data.read(2))[0]
+	data_datehdr = data.read(len_datehdr)
+	
+	len_date = struct.unpack(">h", data.read(2))[0]
+	data_date = data.read(len_date)
+	
+	len_serverhdr = struct.unpack(">h", data.read(2))[0]
+	data_serverhdr = data.read(len_serverhdr)
+	
+	len_server = struct.unpack(">h", data.read(2))[0]
+	data_server = data.read(len_server)
+	
+	# Print section 2 results
+	print "\n[*] File Download Data found (offset 0x80, length %d bytes)" % sec2_len
+	print "  URL : %s" % (data_URL)
+	print "  IP : %s" % (data_IP)
+	print "  JAR Size : %s" % (data_contentlen)
+	print "  Type : %s" % (data_type)
+	print "  Server Date : %s" % (data_modified)
+	print "  Server type : %s" % (data_server)
+	print "  Download date : %s" % (data_date)
 
-len_httpstatus = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_httpstatus = data[offset:offset+len_httpstatus]
-offset += len_httpstatus
+if sec3_len:
+	print "\n[*] Section 3 found (offset 0x%X, length %d bytes)" % (128 + sec2_len, sec3_len)
+	data.seek (128+sec2_len)
+	sec3_hdr = data.read(3)
+	#print hex(sec3_len)
+	if sec3_hdr == "\x1F\x8B\x08":
+		print "  Valid section 3 found. Parsing not implemented at this time."
 
-len_contentlenhdr = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_contentlenhdr = data[offset:offset+len_contentlenhdr]
-offset += len_contentlenhdr
-
-len_contentlen = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_contentlen = data[offset:offset+len_contentlen]
-offset += len_contentlen
-
-len_modifiedhdr = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_modifiedhdr = data[offset:offset+len_modifiedhdr]
-offset += len_modifiedhdr
-
-len_modified = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_modified = data[offset:offset+len_modified]
-offset += len_modified
-
-len_typehdr = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_typehdr = data[offset:offset+len_typehdr]
-offset += len_typehdr
-
-len_type = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_type = data[offset:offset+len_type]
-offset += len_type
-
-len_datehdr = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_datehdr = data[offset:offset+len_datehdr]
-offset += len_datehdr
-
-len_date = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_date = data[offset:offset+len_date]
-offset += len_date
-
-len_serverhdr = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_serverhdr = data[offset:offset+len_serverhdr]
-offset += len_serverhdr
-
-len_server = struct.unpack(">h", data[offset:offset+2])[0]
-offset += 2
-data_server = data[offset:offset+len_server]
-offset += len_server
-
-# Print results
-print "IDX file: %s" % fname
-print "URL: %s" % (data_URL)
-print "IP: %s" % (data_IP)
-print "File Size: %s" % (data_contentlen)
-print "Type: %s" % (data_type)
-print "Server Date: %s" % (data_modified)
-print "Server type: %s" % (data_server)
-print "Download date: %s" % (data_date)
+if sec4_len:
+	print "\n[*] Section 4 found (offset 0x%X, length %d bytes)" % (128 + sec2_len + sec3_len, sec4_len)
+	data.seek (128 + sec2_len + sec3_len)
+	sec4_hdr = data.read(4)
+	if sec4_hdr == "\xAC\xED\x00\x05":
+		print "  Valid section 4 found. Parsing not implemented at this time."
