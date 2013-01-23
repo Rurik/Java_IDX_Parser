@@ -2,7 +2,8 @@
 # Version 1.0 - 12 Jan 13 - @bbaskin
 # Version 1.1 - 22 Jan 13 - now supports various IDX file versions
 # * Updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
-# * Research also produced by 
+# * Research also produced by Joachim Metz at http://www.forensicswiki.org/wiki/Java
+# * Thanks to Corey Harrell for providing a version 6.03 file for testing
 # * Static data is found in sections 3 and 4, but no idea on their values yet.
 
 # Views cached Java download history files
