@@ -19,6 +19,27 @@
 #Server Date: Mon, 26 Jul 2001 05:00:00 GMT
 #Server type: nginx/1.0.15
 #Download date: Sun, 13 Jan 2013 16:22:01 GMT
+""" Output example:
+E:\Development\IDX Parser>idx_parser.py 1c20de82-1678cc50.idx
+Java IDX Parser -- version 1.1 -- by @bbaskin
+
+IDX file: 1c20de82-1678cc50.idx (IDX File Version 6.05)
+
+[*] File Download Data found (offset 0x80, length 365 bytes)
+  URL : http://80d3c146d3.gshjsewsf.su:82/forum/dare.php?hsh=6&key=b30a14e1c597bd7215d593d3f03bd1ab
+  IP : 50.7.219.70
+  JAR Size : 7162
+  Type : application/x-java-archive
+  Server Date : Mon, 26 Jul 2001 05:00:00 GMT
+  Server type : nginx/1.0.15
+  Download date : Sun, 13 Jan 2013 16:22:01 GMT
+
+[*] Section 3 found (offset 0x1ED, length 167 bytes)
+  Valid section 3 found. Parsing not implemented at this time.
+
+[*] Section 4 found (offset 0x294, length 15 bytes)
+  Valid section 4 found. Parsing not implemented at this time.
+"""
 
 ## This is very quick and ugly code, not very pythonistic
 ## I struggle with Python's lack of a 'struct', so just did this manually
