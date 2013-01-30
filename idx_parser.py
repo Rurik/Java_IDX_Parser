@@ -86,7 +86,6 @@ print "IDX file: %s (IDX File Version %d.%02d)" % (fname, cache_ver / 100, cache
 
 
 # Different IDX cache versions have data in different offsets
-# See Mark Woan's breakdown at https://github.com/woanware/javaidx/tree/master/Documents
 if cache_ver == 605:
 	data.seek(36)
 	sec2_len = struct.unpack(">i", data.read(4))[0]
@@ -101,8 +100,6 @@ if cache_ver == 605:
 	sec4_certs_len = struct.unpack(">l", data.read(4))[0]
 	sec4_code_signers = struct.unpack(">l", data.read(4))[0]
 	sec4_signinfo_missing_entries = struct.unpack("b", data.read(1))[0]
-	
-
 elif cache_ver in [603, 604]:
 	data.seek(38)
 	sec2_len = struct.unpack(">l", data.read(4))[0]
@@ -180,7 +177,6 @@ if sec3_len:
 	data.seek (128+sec2_len)
 	sec3_data = data.read(sec3_len)
 
-	#print hex(sec3_len)
 	if sec3_data[0:3] == "\x1F\x8B\x08": # Valid GZIP header
 		sec3_unc = zlib.decompress(sec3_data, 15+32) # Trick to force bitwindow size
 		print sec3_unc
@@ -195,4 +191,4 @@ if sec4_len:
 		
 		
 if sec5_len:
-	print "\n[*] Section 4 (Code Signer) found (offset 0x%X, length %d bytes)" % (128 + sec2_len + sec3_len + sec4_len, sec5_len)
+	print "\n[*] Section 5 found (offset 0x%X, length %d bytes)" % (128 + sec2_len + sec3_len + sec4_len, sec5_len)
