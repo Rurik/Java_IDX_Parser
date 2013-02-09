@@ -16,8 +16,7 @@
 # Java related ones, e.g. BlackHole.
 
 """ Output example:
-E:\Development\Java_IDX_Parser>idx_parser.py Samples\malware\1c20de82-1678cc50.i
-dx
+E:\Development\Java_IDX_Parser>idx_parser.py Samples\malware\1c20de82-1678cc50.idx
 Java IDX Parser -- version 1.3 -- by @bbaskin
 
 IDX file: Samples\malware\1c20de82-1678cc50.idx (IDX File Version 6.05)
