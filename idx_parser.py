@@ -3,12 +3,13 @@
 # Version 1.1 - 22 Jan 13 - now supports various IDX file versions
 # Version 1.2 - 29 Jan 13 - now supports parsing more section 1 data and section 3 manifest
 # Version 1.3 -  8 Feb 13 - Rewrote section 2 parsing. Removed all interpretive code (just parse and print whatever is there)
-#			    Rewrote into subs, added very basic Java Serialization parsing.
+#    		    Rewrote into subs, added very basic Java Serialization parsing.
+#               Added CSV output to display all values. If you want fields, too, search this file for "CSVEDIT" and follow instructions
 
-# * Updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
-# * Research also produced by Joachim Metz at http://www.forensicswiki.org/wiki/Java
-# * Thanks to Corey Harrell for providing a version 6.03 file for testing
-# * Further work based off source: http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
+# * Parsing based off source: http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
+# * Some updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
+# * Thanks to Corey Harrell for providing a version 6.03 file for testing and for initial inspiration:
+#        http://journeyintoir.blogspot.com/2011/02/almost-cooked-up-some-java.html
 
 # Views cached Java download history files
 # Typically located in %AppData%\LocalLow\Sun\Java\Deployment\Cache
@@ -46,8 +47,6 @@ Data:                   Hex: 00000000
 Data: 0                 Hex: 300d0a
 """
 
-## This is very quick and ugly code, not very pythonistic
-## I struggle with Python's lack of a 'struct', so just did this manually
 import sys
 import struct
 import os
@@ -55,12 +54,13 @@ import zlib
 
 __VERSION__ = "1.3"
 __602BUFFER__ = 2 # If script fails to parse your 6.02 files, adjust this. It accounts for a dead space in the data
-
+__CSV__ = False
 
 ##########################################################
 #    Section two contains all download history data
 ##########################################################
 def sec2_parse():
+    csv_body = ''
     data.seek (128)
     len_URL = struct.unpack(">l", data.read(4))[0]
     data_URL = data.read(len_URL)
@@ -72,14 +72,23 @@ def sec2_parse():
     print "\n[*] Section 2 (Download History) found:"
     print "URL: %s" % (data_URL)
     print "IP: %s" % (data_IP)
-
+    if __CSV__:
+        csv_body = fname + "," + data_URL + "," + data_IP
     for i in range(0, sec2_fields):
         len_field = struct.unpack(">h", data.read(2))[0]
         field = data.read(len_field)
         len_value = struct.unpack(">h", data.read(2))[0]
         value = data.read(len_value)
         print "%s: %s" % (field, value)
-
+        if __CSV__:
+            #CSVEDIT: If you want both Field and Value in CSV output, uncomment next line and comment line after.
+            #csv_body += "," + field + "," + value
+            csv_body += "," + value
+    if __CSV__:
+        global csvfile
+        csvfile = fname + ".csv"
+        open(csvfile, 'w').write(csv_body)
+        
 #############################################################
 #    Section two contains all download history data, for 6.02
 #   Cache 6.02 files do NOT store IP addresses
@@ -93,6 +102,8 @@ def sec2_parse_old():
     
     print "\n[*] Section 2 (Download History) found:"
     print "URL: %s" % (data_URL)
+    if __CSV__:
+        csv_body = fname + "," + data_URL
 
     for i in range(0, sec2_fields):
         len_field = struct.unpack(">h", data.read(2))[0]
@@ -100,8 +111,17 @@ def sec2_parse_old():
         len_value = struct.unpack(">h", data.read(2))[0]
         value = data.read(len_value)
         print "%s: %s" % (field, value)
+        if __CSV__:
+            #CSVEDIT: If you want both Field and Value in CSV output, uncomment next line and comment line after.
+            #csv_body += "," + field + "," + value
+            csv_body += "," + value
+
+    if __CSV__:
+        global csvfile
+        csvfile = fname + ".csv"
+        open(csvfile, 'w').write(csv_body)
         
-    # See if section 2 exists
+    # See if section 3 exists
     if data.tell()+3 < filesize:
         sec3_magic, sec3_ver = struct.unpack(">HH", data.read(4))
     print "\n[*] Section 3 (Additional Data) found:"
@@ -149,7 +169,8 @@ def sec4_parse():
                 print "Too many unrecognized bytes. Exiting."
                 return
             sec4_type = struct.unpack("B", data.read(1))[0]
-            if sec4_type == 0x77: #Data block
+            if sec4_type == 0x77: #Data block .. 
+                                  #This _should_ parse for 0x78 (ENDDATABLOCK) but Oracle didn't follow their own specs for IDX files.
                 print "[*] Found: Data block. ",
                 block_len = struct.unpack("b", data.read(1))[0]
                 block_raw = data.read(block_len)
@@ -178,11 +199,16 @@ def sec4_parse():
 if __name__ == "__main__":
     print "Java IDX Parser -- version %s -- by @bbaskin\n" % __VERSION__
     try:
-        fname = sys.argv[1]
+        if sys.argv[1] in ["-c", "-C"]:
+            __CSV__ = True
+            fname = sys.argv[2]
+        else:
+            fname = sys.argv[1]
     except:
         print "Usage: idx_parser.py <filename>"
+        print "\nTo generate a CSV output file:"
+        print "     : idx_parser.py -c <filename>"
         quit()
-    
     try:    
         data = open(fname, 'rb')
     except:
@@ -190,7 +216,6 @@ if __name__ == "__main__":
         quit()
     
     filesize = os.path.getsize(fname)
-    
     
     busy_byte = data.read(1)
     complete_byte = data.read(1)
@@ -249,4 +274,7 @@ if __name__ == "__main__":
                 
     if sec5_len:
         print "\n[*] Section 5 found (offset 0x%X, length %d bytes)" % (128 + sec2_len + sec3_len + sec4_len, sec5_len)
+        
+    if __CSV__:
+        print "\n\n[*] CSV file written to %s" % csvfile
 ### End __main__()
