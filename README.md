@@ -21,7 +21,7 @@ Java IDX Parser -- version 1.3 -- by @bbaskin
 IDX file: Samples\malware\1c20de82-1678cc50.idx (IDX File Version 6.05)
 
 [*] Section 2 (Download History) found:
-URL: http://80d3c146d3.gshjsewsf.su:82/forum/dare.php?hsh=6&key=b30a14e1c597bd7215d593d3f03bd1ab
+URL: hxxp://80d3c146d3.gshjsewsf.su:82/forum/dare.php?hsh=6&key=b30a14e1c597bd7215d593d3f03bd1ab
 IP: 50.7.219.70
 <null>: HTTP/1.1 200 OK
 content-length: 7162
