@@ -9,7 +9,7 @@
 # * Parsing based off source: http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
 # * Some updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
 # * Thanks to Corey Harrell for providing a version 6.03 file for testing and for initial inspiration:
-#        http://journeyintoir.blogspot.com/2011/02/almost-cooked-up-some-java.html
+#        http://journeyintoir.blogspot.com/2011/02/almolsst-cooked-up-some-java.html
 
 # Views cached Java download history files
 # Typically located in %AppData%\LocalLow\Sun\Java\Deployment\Cache
