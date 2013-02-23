@@ -3,11 +3,7 @@
 # Version 1.1 - 22 Jan 13 - now supports various IDX file versions
 # Version 1.2 - 29 Jan 13 - now supports parsing more section 1 data and section 3 manifest
 # Version 1.3 -  8 Feb 13 - Rewrote section 2 parsing. Removed all interpretive code (just parse and print whatever is there)
-<<<<<<< HEAD
 #			    Rewrote into subs, added very basic Java Serialization parsing.
-=======
-#    		    Rewrote into subs, added very basic Java Serialization parsing.
->>>>>>> 461a3b4f723472593362492e08a843cbb05c45b4
 #               Added CSV output to display all values. If you want fields, too, search this file for "CSVEDIT" and follow instructions
 
 # * Parsing based off source: http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
@@ -212,20 +208,12 @@ if __name__ == "__main__":
         print "Usage: idx_parser.py <filename>"
         print "\nTo generate a CSV output file:"
         print "     : idx_parser.py -c <filename>"
-<<<<<<< HEAD
         sys.exit()
-=======
-        quit()
->>>>>>> 461a3b4f723472593362492e08a843cbb05c45b4
     try:    
         data = open(fname, 'rb')
     except:
         print "File not found: %s" % fname
-<<<<<<< HEAD
         sys.exit()
-=======
-        quit()
->>>>>>> 461a3b4f723472593362492e08a843cbb05c45b4
     
     filesize = os.path.getsize(fname)
     
@@ -242,11 +230,7 @@ if __name__ == "__main__":
     if cache_ver not in (602, 603, 604, 605, 606):
         print "Invalid IDX header found"
         print "Found:    0x%s" % cache_ver
-<<<<<<< HEAD
         sys.exit()
-=======
-        quit()
->>>>>>> 461a3b4f723472593362492e08a843cbb05c45b4
     print "IDX file: %s (IDX File Version %d.%02d)" % (fname, cache_ver / 100, cache_ver - 600)
 
     # Different IDX cache versions have data in different offsets
@@ -274,11 +258,7 @@ if __name__ == "__main__":
         sec5_len = 0
     else:
         print "Current file version, %d, is not supported at this time." % cache_ver
-<<<<<<< HEAD
         sys.exit()
-=======
-        quit()
->>>>>>> 461a3b4f723472593362492e08a843cbb05c45b4
 
     if sec2_len:
         if cache_ver == 602: sec2_parse_old()
