@@ -1,5 +1,4 @@
-Java_IDX_Parser
-===============
+## Java_IDX_Parser
 
 The original, and the best, Java Cache IDX parser.
 
@@ -13,7 +12,7 @@ The large blocks of binary data kept bugging me, so I wrote this tool. The initi
 
 The latest release removes all interpretation of the file, outputting just raw data to the screen. That way you get a more accurate portrayal of the data, and you can choose what data is relevant to your cause. Even though most Section 4 data appears to be junk to me, it's in there, and its relevance may come to light one day.
 
-Example usage:
+## Example usage
 
 E:\Development\Java_IDX_Parser>idx_parser.py Samples\malware\1c20de82-1678cc50.idx<br>
 Java IDX Parser -- version 1.3 -- by @bbaskin<br>
@@ -42,3 +41,19 @@ Created-By: 1.7.0_07-b11 (Oracle Corporation)<br>
 Data:                   Hex: 00000000<br>
 [*] Found: Data block.  Length: 3<br>
 Data: 0                 Hex: 300d0a<br>
+
+## Copyright and license
+
+Copyright 2013 Brian Baskin
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this work except in compliance with the License.
+You may obtain a copy of the License in the LICENSE file, or at:
+
+  [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
