@@ -5,11 +5,13 @@
 # Version 1.3 -  8 Feb 13 - Rewrote section 2 parsing. Removed all interpretive code (just parse and print whatever is there)
 #			    Rewrote into subs, added very basic Java Serialization parsing.
 #               Added CSV output to display all values. If you want fields, too, search this file for "CSVEDIT" and follow instructions
+# Version 1.4 - 17 Jul 13 - Fixed a few bugs from Section 1, now displays Section 1 data.
+#               This is mostly useless, as it is also contained in Section 2, but is used to validate data shown in cases of tampering.
 
 # * Parsing based off source: http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
 # * Some updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
 # * Thanks to Corey Harrell for providing a version 6.03 file for testing and for initial inspiration:
-#        http://journeyintoir.blogspot.com/2011/02/almolsst-cooked-up-some-java.html
+#        http://journeyintoir.blogspot.com/2011/02/almost-cooked-up-some-java.html
 
 # Views cached Java download history files
 # Typically located in %AppData%\LocalLow\Sun\Java\Deployment\Cache
@@ -18,9 +20,16 @@
 
 """ Output example:
 E:\Development\Java_IDX_Parser>idx_parser.py Samples\malware\1c20de82-1678cc50.idx
-Java IDX Parser -- version 1.3 -- by @bbaskin
+Java IDX Parser -- version 1.4 -- by @bbaskin
 
 IDX file: Samples\malware\1c20de82-1678cc50.idx (IDX File Version 6.05)
+
+[*] Section 1 (Metadata) found:
+Content length: 7162
+Last modified date: Thu, 26 Jul 2001 05:00:00 GMT (epoch: 996123600)
+Section 2 length: 365
+Section 3 length: 167
+Section 4 length: 15
 
 [*] Section 2 (Download History) found:
 URL: http://80d3c146d3.gshjsewsf.su:82/forum/dare.php?hsh=6&key=b30a14e1c597bd7215d593d3f03bd1ab
@@ -47,12 +56,12 @@ Data:                   Hex: 00000000
 Data: 0                 Hex: 300d0a
 """
 
-import sys
-import struct
 import os
+import struct
+import sys
+import time
 import zlib
-
-__VERSION__ = "1.3"
+__VERSION__ = "1.4"
 __602BUFFER__ = 2 # If script fails to parse your 6.02 files, adjust this. It accounts for a dead space in the data
 __CSV__ = False
 
@@ -220,12 +229,6 @@ if __name__ == "__main__":
     busy_byte = data.read(1)
     complete_byte = data.read(1)
     cache_ver = struct.unpack(">i", data.read(4))[0]
-    force_update = data.read(1)
-    no_href = data.read(1)
-    is_shortcut_img = data.read(1)
-    content_len = struct.unpack(">l", data.read(4))[0] # Not really correct... spec goes off rails around here
-    last_modified_date = struct.unpack(">l", data.read(4))[0]
-    expiration_date = struct.unpack(">l", data.read(4))[0]
 
     if cache_ver not in (602, 603, 604, 605, 606):
         print "Invalid IDX header found"
@@ -234,28 +237,50 @@ if __name__ == "__main__":
     print "IDX file: %s (IDX File Version %d.%02d)" % (fname, cache_ver / 100, cache_ver - 600)
 
     # Different IDX cache versions have data in different offsets
-    if cache_ver in [603,604,605]:
-        if cache_ver in [603, 604]:
-            data.seek(38)
-        else:
-            data.seek(36)
-        sec2_len = struct.unpack(">i", data.read(4))[0]
-        sec3_len = struct.unpack(">i", data.read(4))[0]
-        sec4_len = struct.unpack(">i", data.read(4))[0]
-        sec5_len = struct.unpack(">i", data.read(4))[0]
-        blacklist_timestamp = struct.unpack(">l", data.read(4))[0]
-        cert_expiration_date = struct.unpack(">l", data.read(4))[0]
-        sec4_old_cert_len = struct.unpack(">l", data.read(4))[0]
-        sec4_unsigned_entries = struct.unpack("b", data.read(1))[0]
-        sec4_single_code_src = struct.unpack("b", data.read(1))[0]
-        sec4_certs_len = struct.unpack(">l", data.read(4))[0]
-        sec4_signers_len = struct.unpack(">l", data.read(4))[0]
-        sec4_signinfo_missing_entries = struct.unpack("b", data.read(1))[0]
-    elif cache_ver == 602:
-        sec2_len = 1
-        sec3_len = 0
-        sec4_len = 0
-        sec5_len = 0
+    if cache_ver in [602, 603, 604, 605]:
+        if cache_ver in [602, 603, 604]:
+            data.seek(8)
+        elif cache_ver == 605:
+            data.seek(6)
+        is_shortcut_img = data.read(1)
+        content_len = struct.unpack(">l", data.read(4))[0] 
+        last_modified_date = struct.unpack(">q", data.read(8))[0]/1000
+        expiration_date = struct.unpack(">q", data.read(8))[0]/1000
+        validation_date = struct.unpack(">q", data.read(8))[0]/1000
+
+        print "\n[*] Section 1 (Metadata) found:"
+        print "Content length: %d" % content_len
+        print "Last modified date: %s (epoch: %d)" % (time.strftime("%a, %d %b %Y %X GMT", time.gmtime(last_modified_date)), last_modified_date)
+        if expiration_date:
+            print "Expiration date: %s (epoch: %d)" % (time.strftime("%a, %d %b %Y %X GMT", time.gmtime(expiration_date)), expiration_date)
+        if validation_date and cache_ver > 602: #While 6.02 technically supports this, every sample I've seen just has 3 null bytes and skips to Section 2
+            print "Validation date: %s (epoch: %d)" % (time.strftime("%a, %d %b %Y %X GMT", time.gmtime(validation_date)), validation_date)
+        
+        if cache_ver == 602:
+            sec2_len = 1
+            sec3_len = 0
+            sec4_len = 0
+            sec5_len = 0
+        elif cache_ver in [603, 604, 605]:
+            known_to_be_signed = data.read(1)
+            sec2_len = struct.unpack(">i", data.read(4))[0]
+            sec3_len = struct.unpack(">i", data.read(4))[0]
+            sec4_len = struct.unpack(">i", data.read(4))[0]
+            sec5_len = struct.unpack(">i", data.read(4))[0]
+            
+            blacklist_timestamp = struct.unpack(">q", data.read(8))[0]/1000
+            cert_expiration_date = struct.unpack(">q", data.read(8))[0]/1000
+            class_verification_status = data.read(1)
+            reduced_manifest_length = struct.unpack(">l", data.read(4))[0]
+            
+            print "Section 2 length: %d" % sec2_len
+            if sec3_len: print "Section 3 length: %d" % sec3_len
+            if sec4_len: print "Section 4 length: %d" % sec4_len
+            if sec5_len: print "Section 4 length: %d" % sec5_len
+            if expiration_date:
+                print "Blacklist Expiration date: %s (epoch: %d)" % (time.strftime("%a, %d %b %Y %X GMT", time.gmtime(blacklist_timestamp)), blacklist_timestamp)
+            if cert_expiration_date:
+                print "Certificate Expiration date: %s (epoch: %d)" % (time.strftime("%a, %d %b %Y %X GMT", time.gmtime(cert_expiration_date)), cert_expiration_date)
     else:
         print "Current file version, %d, is not supported at this time." % cache_ver
         sys.exit()
