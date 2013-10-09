@@ -8,7 +8,7 @@
 # Version 1.4 - 17 Jul 13 - Fixed a few bugs from Section 1, now displays Section 1 data.
 #               This is mostly useless, as it is also contained in Section 2, but is used to validate data shown in cases of tampering.
 
-# * Parsing based off source: http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
+# * Parsing based off source: http://wayback.archive.org/web/20130420230500/http://javasourcecode.org/html/open-source/jdk/jdk-6u23/com/sun/deploy/cache/CacheEntry.java.html
 # * Some updates based off research by Mark Woan (@woanwave) - https://github.com/woanware/javaidx/tree/master/Documents
 # * Thanks to Corey Harrell for providing a version 6.03 file for testing and for initial inspiration:
 #        http://journeyintoir.blogspot.com/2011/02/almost-cooked-up-some-java.html
